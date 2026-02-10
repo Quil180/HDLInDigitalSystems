@@ -7,7 +7,8 @@ module testbench_full_adder ();
   reg Cin;
 
   // Outputs
-  wire [3:0] out_rca, out_cla, cout_rca, cout_cla;
+  wire [3:0] out_rca, out_cla;
+  wire cout_rca, cout_cla;
 
   cla cla_adder (
       .A(A),
