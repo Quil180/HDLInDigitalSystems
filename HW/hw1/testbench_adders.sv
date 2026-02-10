@@ -33,36 +33,36 @@ module testbench_adders ();
     B   = 'b0;
     Cin = 'b0;
     #10;
-    assert ({cout_cla, out_cla} == (A + B + Cin));
-    assert ({cout_rca, out_rca} == (A + B + Cin));
+    assert ({cout_cla, out_cla} == (A + B + Cin)) else $display("UHOH SPEGHATTI");
+    assert ({cout_rca, out_rca} == (A + B + Cin)) else $display("UHOH SPEGHATTI");
 
     A   = 'b1111;
     B   = 'b0001;
     Cin = 'b0;
     #10;
-    assert ({cout_cla, out_cla} == (A + B + Cin));
-    assert ({cout_rca, out_rca} == (A + B + Cin));
+    assert ({cout_cla, out_cla} == (A + B + Cin)) else $display("UHOH SPEGHATTI");
+    assert ({cout_rca, out_rca} == (A + B + Cin)) else $display("UHOH SPEGHATTI");
 
     A   = 'b1010;
     B   = 'b0101;
     Cin = 'b1;
     #10;
-    assert ({cout_cla, out_cla} == (A + B + Cin));
-    assert ({cout_rca, out_rca} == (A + B + Cin));
+    assert ({cout_cla, out_cla} == (A + B + Cin)) else $display("UHOH SPEGHATTI");
+    assert ({cout_rca, out_rca} == (A + B + Cin)) else $display("UHOH SPEGHATTI");
 
     A   = 'b1111;
     B   = 'b1111;
     Cin = 'b1;
     #10;
-    assert ({cout_cla, out_cla} == (A + B + Cin));
-    assert ({cout_rca, out_rca} == (A + B + Cin));
+    assert ({cout_cla, out_cla} == (A + B + Cin)) else $display("UHOH SPEGHATTI");
+    assert ({cout_rca, out_rca} == (A + B + Cin)) else $display("UHOH SPEGHATTI");
 
     A   = 'b0111;
     B   = 'b0001;
     Cin = 'b0;
     #10;
-    assert ({cout_cla, out_cla} == (A + B + Cin));
-    assert ({cout_rca, out_rca} == (A + B + Cin));
+    assert ({cout_cla, out_cla} == (A + B + Cin)) else $display("UHOH SPEGHATTI");
+    assert ({cout_rca, out_rca} == (A + B + Cin)) else $display("UHOH SPEGHATTI");
 
     #50;
 
