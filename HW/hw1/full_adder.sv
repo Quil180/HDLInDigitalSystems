@@ -8,7 +8,8 @@ module full_adder (
     output sum
 );
 
-  assign {c_out, sum} = a + b + c_in;
+  assign #1 sum   = a ^ b ^ c_in;
+  assign #1 c_out = (a & b) | (b & c_in) | (a & c_in);
 
 endmodule
 
