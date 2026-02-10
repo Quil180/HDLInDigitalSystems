@@ -26,8 +26,8 @@ module testbench_adders ();
   );
 
   initial begin
-
-    $dumpfile("dump.vcd");
+    $fsdbDumpfile("dump.fsdb");
+    $fsdbDumpvars(0, testbench_adders);
 
     A   = 'b0;
     B   = 'b0;
@@ -65,8 +65,6 @@ module testbench_adders ();
     assert ({cout_rca, out_rca} == (A + B + Cin));
 
     #50;
-
-    $dumpvars(0, testbech_adders);
 
     $finish;
   end
