@@ -1,6 +1,6 @@
 `timescale 1ns / 10ps
 
-module testbench_full_adder ();
+module testbench_adders ();
 
   // Inputs
   reg [3:0] A, B;
@@ -26,6 +26,9 @@ module testbench_full_adder ();
   );
 
   initial begin
+
+    $dumpfile("dump.vcd");
+
     A   = 'b0;
     B   = 'b0;
     Cin = 'b0;
@@ -62,6 +65,8 @@ module testbench_full_adder ();
     assert ({cout_rca, out_rca} == (A + B + Cin));
 
     #50;
+
+    $dumpvars(0, testbech_adders);
 
     $finish;
   end
