@@ -8,7 +8,7 @@ rm -rf csrc simv* ucli.key vc_hdrs.h
 # -debug_access+all: Enables debugging/waveform generation
 # -kdb: (Optional) Enables Verdi Knowledge Database
 vcs -full64 -sverilog -debug_access+all \
-    *.sv \
+    src/*.sv \
     -o simv
 
 # 3. Run the simulation
