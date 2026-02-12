@@ -14,3 +14,6 @@ vcs -full64 -sverilog -debug_access+all \
 # 3. Run the simulation
 # +ntb_random_seed_automatic: Good for randomized TBs
 ./simv +ntb_random_seed_automatic
+
+# 4. Running Synthesis
+dc_shell -f synthesis.tcl
