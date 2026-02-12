@@ -1,0 +1,169 @@
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -max_paths 10
+Design : cla
+Version: X-2025.06-SP4
+Date   : Wed Feb 11 22:45:36 2026
+****************************************
+
+Operating Conditions: nom_pvt   Library: class
+Wire Load Model Mode: top
+
+  Startpoint: B[2] (input port)
+  Endpoint: S[3] (output port)
+  Path Group: default
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cla                05x05                 class
+
+  Point                                    Incr       Path
+  -----------------------------------------------------------
+  input external delay                     0.00       0.00 r
+  B[2] (in)                                0.00       0.00 r
+  U57/Z (ND2I)                             0.12       0.12 f
+  U59/Z (ND2I)                             0.30       0.42 r
+  U80/Z (ND2I)                             0.19       0.60 f
+  U81/Z (AO7P)                             0.68       1.29 r
+  U83/Z (ENI)                              0.38       1.67 f
+  S[3] (out)                               0.00       1.67 f
+  data arrival time                                   1.67
+
+  max_delay                                1.00       1.00
+  output external delay                    0.00       1.00
+  data required time                                  1.00
+  -----------------------------------------------------------
+  data required time                                  1.00
+  data arrival time                                  -1.67
+  -----------------------------------------------------------
+  slack (VIOLATED)                                   -0.67
+
+
+  Startpoint: B[2] (input port)
+  Endpoint: Cout (output port)
+  Path Group: default
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cla                05x05                 class
+
+  Point                                    Incr       Path
+  -----------------------------------------------------------
+  input external delay                     0.00       0.00 r
+  B[2] (in)                                0.00       0.00 r
+  U40/Z (IVI)                              0.12       0.12 f
+  U52/Z (AN2I)                             0.61       0.73 f
+  U54/Z (ND2I)                             0.25       0.98 r
+  U55/Z (AN2I)                             0.34       1.32 r
+  U68/Z (ND2I)                             0.12       1.44 f
+  U69/Z (IVI)                              0.20       1.64 r
+  Cout (out)                               0.00       1.64 r
+  data arrival time                                   1.64
+
+  max_delay                                1.00       1.00
+  output external delay                    0.00       1.00
+  data required time                                  1.00
+  -----------------------------------------------------------
+  data required time                                  1.00
+  data arrival time                                  -1.64
+  -----------------------------------------------------------
+  slack (VIOLATED)                                   -0.64
+
+
+  Startpoint: B[1] (input port)
+  Endpoint: S[2] (output port)
+  Path Group: default
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cla                05x05                 class
+
+  Point                                    Incr       Path
+  -----------------------------------------------------------
+  input external delay                     0.00       0.00 r
+  B[1] (in)                                0.00       0.00 r
+  U48/Z (IVI)                              0.12       0.12 f
+  U38/Z (ND2I)                             0.25       0.38 r
+  U62/Z (ND2I)                             0.12       0.50 f
+  U63/Z (IVI)                              0.24       0.74 r
+  U66/Z (ND2I)                             0.20       0.94 f
+  U75/Z (ND2I)                             0.25       1.19 r
+  U77/Z (ENI)                              0.38       1.57 f
+  S[2] (out)                               0.00       1.57 f
+  data arrival time                                   1.57
+
+  max_delay                                1.00       1.00
+  output external delay                    0.00       1.00
+  data required time                                  1.00
+  -----------------------------------------------------------
+  data required time                                  1.00
+  data arrival time                                  -1.57
+  -----------------------------------------------------------
+  slack (VIOLATED)                                   -0.57
+
+
+  Startpoint: B[0] (input port)
+  Endpoint: S[1] (output port)
+  Path Group: default
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cla                05x05                 class
+
+  Point                                    Incr       Path
+  -----------------------------------------------------------
+  input external delay                     0.00       0.00 f
+  B[0] (in)                                0.00       0.00 f
+  U31/Z (B4IP)                             0.37       0.37 r
+  U43/Z (ND2I)                             0.20       0.57 f
+  U72/Z (ND2I)                             0.25       0.82 r
+  U74/Z (ENI)                              0.38       1.20 f
+  S[1] (out)                               0.00       1.20 f
+  data arrival time                                   1.20
+
+  max_delay                                1.00       1.00
+  output external delay                    0.00       1.00
+  data required time                                  1.00
+  -----------------------------------------------------------
+  data required time                                  1.00
+  data arrival time                                  -1.20
+  -----------------------------------------------------------
+  slack (VIOLATED)                                   -0.20
+
+
+  Startpoint: B[0] (input port)
+  Endpoint: S[0] (output port)
+  Path Group: default
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cla                05x05                 class
+
+  Point                                    Incr       Path
+  -----------------------------------------------------------
+  input external delay                     0.00       0.00 f
+  B[0] (in)                                0.00       0.00 f
+  U70/Z (ENI)                              0.42       0.42 f
+  U71/Z (ENI)                              0.38       0.80 f
+  S[0] (out)                               0.00       0.80 f
+  data arrival time                                   0.80
+
+  max_delay                                1.00       1.00
+  output external delay                    0.00       1.00
+  data required time                                  1.00
+  -----------------------------------------------------------
+  data required time                                  1.00
+  data arrival time                                  -0.80
+  -----------------------------------------------------------
+  slack (MET)                                         0.20
+
+
+1

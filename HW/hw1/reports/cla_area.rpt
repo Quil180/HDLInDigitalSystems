@@ -1,0 +1,43 @@
+ 
+****************************************
+Report : area
+Design : cla
+Version: X-2025.06-SP4
+Date   : Wed Feb 11 22:45:36 2026
+****************************************
+
+Library(s) Used:
+
+    class (File: /home/net/synopsys/installs/syn/X-2025.06-SP4/libraries/syn/class.db)
+
+Number of ports:                           14
+Number of nets:                            66
+Number of cells:                           57
+Number of combinational cells:             57
+Number of sequential cells:                 0
+Number of macros/black boxes:               0
+Number of buf/inv:                         20
+Number of references:                       8
+
+Combinational area:                 98.000000
+Buf/Inv area:                       41.000000
+Noncombinational area:               0.000000
+Macro/Black Box area:                0.000000
+Net Interconnect area:      undefined  (Wire load has zero net area)
+
+Total cell area:                    98.000000
+Total area:                 undefined
+
+Hierarchical area distribution
+------------------------------
+
+                                  Global cell area          Local cell area
+                                  ------------------  --------------------------- 
+Hierarchical cell                 Absolute   Percent  Combi-    Noncombi-  Black-
+                                  Total      Total    national  national   boxes   Design
+--------------------------------  ---------  -------  --------  ---------  ------  ---------
+cla                                 98.0000    100.0   98.0000     0.0000  0.0000  cla
+--------------------------------  ---------  -------  --------  ---------  ------  ---------
+Total                                                  98.0000     0.0000  0.0000
+
+1
