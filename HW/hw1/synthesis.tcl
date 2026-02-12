@@ -4,7 +4,7 @@ set_app_var link_library   {* gtech.db}
 
 # 2. Design Ingestion
 # Note: testbench_adders.sv is excluded as it is for simulation [cite: 1, 5]
-analyze -format sverilog {full_adder.sv rca.sv cla.sv}
+analyze -format sverilog {src/full_adder.sv src/rca.sv src/cla.sv}
 elaborate cla 
 
 # 3. Constraints
