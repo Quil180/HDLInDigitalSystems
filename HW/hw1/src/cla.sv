@@ -1,4 +1,4 @@
-`timescale 1ns / 20ps
+`timescale 1ns / 10ps
 
 module cla (
     input [3:0] A,

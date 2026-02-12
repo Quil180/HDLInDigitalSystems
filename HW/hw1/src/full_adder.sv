@@ -1,4 +1,4 @@
-`timescale 1ns / 20ps
+`timescale 1ns / 10ps
 
 module full_adder (
     input  a,
