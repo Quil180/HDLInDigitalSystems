@@ -3,8 +3,8 @@ file mkdir reports
 file mkdir output
 
 # 1. Environment & Library Setup
-set_app_var target_library {gtech.db}
-set_app_var link_library   {* gtech.db}
+set_app_var target_library {class.db}
+set_app_var link_library   {* class.db}
 
 # 2. Design Ingestion
 analyze -format sverilog {src/full_adder.sv src/rca.sv src/cla.sv}
