@@ -1,0 +1,85 @@
+\documentclass[11pt, letterpaper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{caption}
+
+% Page Layout
+\geometry{margin=1in}
+
+% Code Listing Style
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{verilogstyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                  
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=Verilog
+}
+
+\lstset{style=verilogstyle}
+
+% Title Info
+\title{HDL Design Homework: SystemC vs SystemVerilog}
+\author{Yousef Awad \\ EEL 4783 - HDL in Digital Systems}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Part 1: SystemC}
+
+\subsection*{1.1: Counter Module}
+\subsubsection*{a) The completed module skeleton}
+\lstinputlisting{../src/counter.cpp}
+
+\subsubsection*{b) Why is SC\_METHOD (not SC\_THREAD) appropriate here?}
+\texttt{SC\_METHOD} is ideal because it executes its entire block of code and returns control to the simulator without needing to be suspended. Since the requirements explicitly state not to use \texttt{wait()}, \texttt{SC\_METHOD} is the correct choice over \texttt{SC\_THREAD} (which requires \texttt{wait()} to suspend and resume execution).
+
+\pagebreak
+\subsection*{1.2: Testbench Snippet}
+\lstinputlisting{../src/main.cpp}
+
+\newpage
+\section*{Part 2: SystemVerilog}
+
+\subsection*{2.1: Shift Register RTL}
+\lstinputlisting{../src/shift_reg.sv}
+
+\subsection*{2.2: Testbench Logic}
+\lstinputlisting{../src/shift_reg_tb.sv}
+
+\subsection*{2.3: Concept Check}
+\textbf{a) Why does SystemC use sc\_signal instead of plain C++ variables for ports?}\\
+\texttt{sc\_signal} implements the evaluate-update paradigm of hardware simulation, ensuring that updates are deferred until the next simulation delta cycle to prevent race conditions that plain C++ variables would cause.
+
+\vspace{1em}
+\noindent
+\textbf{b) What critical error occurs if you declare data\_out as wire instead of logic in Problem 2.1?}\\
+If you attempt to assign to \texttt{data\_out} procedurally (inside the \texttt{always\_ff} block) while it is declared as a \texttt{wire}, the SystemVerilog compiler will throw an error, because \texttt{wire} types can only be driven by continuous assignments (\texttt{assign}), whereas \texttt{logic} can be driven procedurally.
+
+\end{document}
