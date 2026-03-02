@@ -1,0 +1,32 @@
+ 
+****************************************
+Report : area
+Design : shift_reg
+Version: X-2025.06-SP4
+Date   : Mon Mar  2 14:41:31 2026
+****************************************
+
+Library(s) Used:
+
+    gtech (File: /home/net/synopsys/installs/syn/X-2025.06-SP4/libraries/syn/gtech.db)
+
+Number of ports:                           19
+Number of nets:                            83
+Number of cells:                           41
+Number of combinational cells:              5
+Number of sequential cells:                34
+Number of macros/black boxes:               0
+Number of buf/inv:                          3
+Number of references:                       7
+
+Combinational area:                  0.000000
+Buf/Inv area:                        0.000000
+Noncombinational area:               0.000000
+Macro/Black Box area:                0.000000
+Net Interconnect area:      undefined  (No wire load specified)
+
+Total cell area:                     0.000000
+Total area:                 undefined
+
+Information: This design contains unmapped logic. (RPT-7)
+1
