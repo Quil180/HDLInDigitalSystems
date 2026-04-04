@@ -55,6 +55,9 @@ module tb_top;
   reg active_check = 0;
   always @(negedge clk) begin
     if (!reset && active_check) begin
+      $display("Time: %0t | In(un): %0d -> Out(un): %0d [Exp: %0d] | In(pipe): %0d -> Out(pipe): %0d [Exp: %0d]", 
+               $time, pipe_un[1], x_out_un, c_ref_c(pipe_un[1]), pipe_p[3], x_out_pipe, c_ref_c(pipe_p[3]));
+      
       // Check Unpipelined (1 cycle latency) using C DPI
       if (x_out_un !== c_ref_c(pipe_un[1])) begin
         $error("Unpipelined Mismatch! In: %0d, Out: %0d, Expected(C): %0d", pipe_un[1], x_out_un, c_ref_c(pipe_un[1]));
