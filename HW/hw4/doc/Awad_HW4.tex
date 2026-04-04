@@ -1,0 +1,94 @@
+\documentclass[11pt, letterpaper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{caption}
+
+% Page Layout
+\geometry{margin=1in}
+
+% Code Listing Style
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{verilogstyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                  
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                   
+    tabsize=2,
+    language=Verilog
+}
+
+\lstset{style=verilogstyle}
+
+% Title Info
+\title{Homework 4: Pipelining Design}
+\author{Yousef Awad \\ EEL 4783 - HDL in Digital Systems}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{1)}
+Translate the following C code into a Verilog code without pipelining.
+\begin{lstlisting}[language=C]
+int x = 0;
+for (int i = 0; i < 3; i++)
+{
+  x = 2*x + 1;
+}
+\end{lstlisting}
+
+\subsection*{Unpipelined Verilog Implementation}
+\lstinputlisting{../src/unpipelined.sv}
+
+\pagebreak
+\section*{2) Analysis of Unpipelined Design}
+Based on the implementation in \texttt{unpipelined.sv}, the following performance metrics are identified:
+
+\begin{itemize}
+    \item \textbf{Throughput:} 8 bits per clock cycle. Since the module produces one 8-bit result every clock cycle, the throughput is constant at 1 result/cycle.
+    \item \textbf{Latency:} 1 clock cycle. The data enters the module and the final result of all three iterations is available at the next rising edge of the clock.
+    \item \textbf{Timing (Critical Path Delay):} The critical path consists of three consecutive shift-and-add operations. 
+    \[ T_{crit} = 3 \times T_{logic} + T_{co} + T_{su} \]
+    Where $T_{logic}$ is the delay of a single $(2x+1)$ operation, $T_{co}$ is the clock-to-output delay of the input register, and $T_{su}$ is the setup time of the output register.
+\end{itemize}
+
+\section*{3) Pipelined Verilog Code}
+\lstinputlisting{../src/pipelined.sv}
+
+\pagebreak
+\section*{4. Analysis of Pipelined Design}
+Based on the implementation in \texttt{pipelined.sv}, the following performance metrics are identified:
+
+\begin{itemize}
+    \item \textbf{Throughput:} 8 bits per clock cycle. Once the pipeline is full (after the initial latency), the module produces one 8-bit result every clock cycle.
+    \item \textbf{Latency:} 3 clock cycles. Since the design is divided into three stages, it takes three clock cycles for a specific input to propagate to the output.
+    \item \textbf{Timing (Critical Path Delay):} The critical path is reduced to a single shift-and-add operation between registers.
+    \[ T_{crit} = 1 \times T_{logic} + T_{co} + T_{su} \]
+    This allows for a significantly higher maximum clock frequency compared to the unpipelined design, as the path delay is approximately one-third of the unpipelined version.
+\end{itemize}
+
+\end{document}

@@ -26,7 +26,7 @@ module shift_reg_tb;
     forever #5 clk = ~clk;
   end
 
-  // 4. Your Stimulus Block
+  // Your Stimulus Block
   initial begin
     // Dumpfile setup for "shift.vcd"
     $dumpfile("shift.vcd");
