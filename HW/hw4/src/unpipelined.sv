@@ -1,3 +1,5 @@
+`timescale 1ns / 1ps
+
 module unpipelined (
     input clk,
     input reset,

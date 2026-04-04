@@ -13,21 +13,24 @@ if {[catch {exec {*}$vcs_cmd} result]} {
     }
 }
 
-# Synthesis using Synplify
-puts "\nStarting Synplify Synthesis..."
-set syn_tcl [open "synth.tcl" w]
-puts $syn_tcl "add_file -verilog src/unpipelined.sv"
-puts $syn_tcl "add_file -verilog src/pipelined.sv"
-puts $syn_tcl "set_option -technology 7-Series"
-puts $syn_tcl "set_option -part XC7K70T"
-puts $syn_tcl "project -run"
-puts $syn_tcl "project -save hw4_synthesis.prj"
-close $syn_tcl
+# Synthesis using Vivado
+puts "\nStarting Vivado Synthesis..."
+set synth_tcl [open "synth_vivado.tcl" w]
+puts $synth_tcl "read_verilog -sv src/unpipelined.sv"
+puts $synth_tcl "read_verilog -sv src/pipelined.sv"
+puts $synth_tcl "synth_design -top pipelined -part xc7k70tfbg484-2"
+puts $synth_tcl "report_utilization -file utilization_pipe.txt"
+puts $synth_tcl "report_timing -file timing_pipe.txt"
+puts $synth_tcl "synth_design -top unpipelined -part xc7k70tfbg484-2"
+puts $synth_tcl "report_utilization -file utilization_un.txt"
+puts $synth_tcl "report_timing -file timing_un.txt"
+puts $synth_tcl "exit"
+close $synth_tcl
 
-set syn_cmd "synplify_pro -batch synth.tcl"
-if {[catch {exec {*}$syn_cmd} syn_result]} {
-    puts "Synplify Error: $syn_result"
+set vivado_cmd "vivado -mode batch -source synth_vivado.tcl -nolog -nojournal"
+if {[catch {exec {*}$vivado_cmd} vivado_result]} {
+    puts "Vivado Error: $vivado_result"
 } else {
-    puts "Synplify Synthesis Successful."
-    puts $syn_result
+    puts "Vivado Synthesis Successful."
+    puts "Reports generated: utilization_pipe.txt, timing_pipe.txt, utilization_un.txt, timing_un.txt"
 }
