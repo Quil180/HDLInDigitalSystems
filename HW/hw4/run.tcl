@@ -1,6 +1,6 @@
 # Verification using VCS
 puts "Starting VCS Verification..."
-set vcs_cmd "vcs -full64 -sverilog +define+VCS src/unpipelined.sv src/pipelined.sv testbench/tb_top.sv -o simv"
+set vcs_cmd "vcs -full64 -sverilog +define+VCS src/unpipelined.sv src/pipelined.sv src/reference.c testbench/tb_top.sv -o simv"
 if {[catch {exec {*}$vcs_cmd} result]} {
     puts "VCS Compilation Error: $result"
 } else {

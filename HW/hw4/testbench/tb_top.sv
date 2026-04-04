@@ -1,24 +1,14 @@
 `timescale 1ns / 1ps
 
 module tb_top;
+  // Import C function via DPI-C
+  import "DPI-C" function byte c_ref_c(input byte val);
+
   reg clk;
   reg reset;
   reg [7:0] x_in;
   wire [7:0] x_out_un;
   wire [7:0] x_out_pipe;
-
-  // Simulation reference function (C code logic)
-  function [7:0] c_ref(input [7:0] val);
-    integer i;
-    reg [7:0] x;
-    begin
-      x = val;
-      for (i = 0; i < 3; i++) begin
-        x = 2 * x + 1;
-      end
-      c_ref = x;
-    end
-  endfunction
 
   // Clock generation: 100MHz (10ns period)
   initial begin
@@ -65,17 +55,17 @@ module tb_top;
   reg active_check = 0;
   always @(negedge clk) begin
     if (!reset && active_check) begin
-      // Check Unpipelined (1 cycle latency)
-      if (x_out_un !== c_ref(pipe_un[1])) begin
-        $error("Unpipelined Mismatch! In: %0d, Out: %0d, Expected: %0d", pipe_un[1], x_out_un, c_ref(pipe_un[1]));
+      // Check Unpipelined (1 cycle latency) using C DPI
+      if (x_out_un !== c_ref_c(pipe_un[1])) begin
+        $error("Unpipelined Mismatch! In: %0d, Out: %0d, Expected(C): %0d", pipe_un[1], x_out_un, c_ref_c(pipe_un[1]));
         fail_count++;
       end else begin
         pass_count++;
       end
 
-      // Check Pipelined (3 cycles latency)
-      if (x_out_pipe !== c_ref(pipe_p[3])) begin
-        $error("Pipelined Mismatch! In: %0d, Out: %0d, Expected: %0d", pipe_p[3], x_out_pipe, c_ref(pipe_p[3]));
+      // Check Pipelined (3 cycles latency) using C DPI
+      if (x_out_pipe !== c_ref_c(pipe_p[3])) begin
+        $error("Pipelined Mismatch! In: %0d, Out: %0d, Expected(C): %0d", pipe_p[3], x_out_pipe, c_ref_c(pipe_p[3]));
         fail_count++;
       end else begin
         pass_count++;
@@ -110,7 +100,7 @@ module tb_top;
     active_check = 0;
 
     if (fail_count == 0 && pass_count > 0) 
-      $display("TEST PASSED: %0d results match C reference.", pass_count);
+      $display("TEST PASSED: %0d results match C reference via DPI-C.", pass_count);
     else 
       $display("TEST FAILED: %0d mismatches detected.", fail_count);
 
