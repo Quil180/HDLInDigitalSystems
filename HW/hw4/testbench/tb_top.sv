@@ -42,76 +42,79 @@ module tb_top;
       .x_out(x_out_pipe)
   );
 
-  // Input generation and checking
-  reg [7:0] in_queue[$];
-  reg [7:0] pipe_in_queue[$];
+  // Scoreboard / Delay line
+  reg [7:0] pipe_un [1:1];
+  reg [7:0] pipe_p  [1:3];
   integer pass_count = 0;
   integer fail_count = 0;
+  integer i;
+
+  always @(posedge clk) begin
+    if (reset) begin
+      for (i = 1; i <= 1; i++) pipe_un[i] <= 0;
+      for (i = 1; i <= 3; i++) pipe_p[i]  <= 0;
+    end else begin
+      pipe_un[1] <= x_in;
+      pipe_p[1]  <= x_in;
+      pipe_p[2]  <= pipe_p[1];
+      pipe_p[3]  <= pipe_p[2];
+    end
+  end
+
+  // Checking logic
+  reg active_check = 0;
+  always @(negedge clk) begin
+    if (!reset && active_check) begin
+      // Check Unpipelined (1 cycle latency)
+      if (x_out_un !== c_ref(pipe_un[1])) begin
+        $error("Unpipelined Mismatch! In: %0d, Out: %0d, Expected: %0d", pipe_un[1], x_out_un, c_ref(pipe_un[1]));
+        fail_count++;
+      end else begin
+        pass_count++;
+      end
+
+      // Check Pipelined (3 cycles latency)
+      if (x_out_pipe !== c_ref(pipe_p[3])) begin
+        $error("Pipelined Mismatch! In: %0d, Out: %0d, Expected: %0d", pipe_p[3], x_out_pipe, c_ref(pipe_p[3]));
+        fail_count++;
+      end else begin
+        pass_count++;
+      end
+    end
+  end
 
   initial begin
     // Initialize
     reset = 1;
     x_in  = 0;
-    #25;
+    active_check = 0;
+    repeat (5) @(posedge clk);
     reset = 0;
 
     // Test Case 1: Start with x = 0 (per C code)
     @(posedge clk);
-    x_in = 8'd0;
-    in_queue.push_back(x_in);
-    pipe_in_queue.push_back(x_in);
+    x_in <= 8'd0;
+    
+    // Wait for first input to reach checkers
+    repeat (1) @(posedge clk);
+    active_check = 1;
 
-    // Test Case 2-10: Random inputs
+    // Test Case 2-11: Random inputs
     repeat (10) begin
       @(posedge clk);
-      x_in = $urandom_range(0, 30);  // Prevent overflow in 8-bit (x*8 + 7)
-      in_queue.push_back(x_in);
-      pipe_in_queue.push_back(x_in);
+      x_in <= $urandom_range(0, 30);  // Prevent overflow in 8-bit (x*8 + 7)
     end
 
     // Wait for pipeline to drain
     repeat (5) @(posedge clk);
+    active_check = 0;
 
-    if (fail_count == 0) $display("TEST PASSED: All results match C reference.");
-    else $display("TEST FAILED: %0d mismatches detected.", fail_count);
+    if (fail_count == 0 && pass_count > 0) 
+      $display("TEST PASSED: %0d results match C reference.", pass_count);
+    else 
+      $display("TEST FAILED: %0d mismatches detected.", fail_count);
 
     $finish;
-  end
-
-  // Unpipelined checker (1-cycle latency)
-  reg [7:0] check_in_un;
-  always @(posedge clk) begin
-    if (!reset && in_queue.size() > 0) begin
-      check_in_un = in_queue.pop_front();
-      @(posedge clk);  // Result available next cycle
-      assert (x_out_un === c_ref(
-          check_in_un
-      )) begin
-        pass_count++;
-      end else begin
-        fail_count++;
-        $error("Unpipelined Mismatch! In: %0d, Out: %0d, Expected: %0d", check_in_un, x_out_un,
-               c_ref(check_in_un));
-      end
-    end
-  end
-
-  // Pipelined checker (3-cycle latency)
-  reg [7:0] check_in_pipe;
-  always @(posedge clk) begin
-    if (!reset && pipe_in_queue.size() > 0) begin
-      check_in_pipe = pipe_in_queue.pop_front();
-      repeat (3) @(posedge clk);  // Result available after 3 cycles
-      assert (x_out_pipe === c_ref(
-          check_in_pipe
-      )) begin
-        pass_count++;
-      end else begin
-        fail_count++;
-        $error("Pipelined Mismatch! In: %0d, Out: %0d, Expected: %0d", check_in_pipe, x_out_pipe,
-               c_ref(check_in_pipe));
-      end
-    end
   end
 
 endmodule
