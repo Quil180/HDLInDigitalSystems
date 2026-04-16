@@ -24,7 +24,12 @@ csynth_design
 # 5. C/RTL Co-Simulation (VHDL as specified in project)
 cosim_design -tool auto -rtl verilog
 
-# 6. Export RTL (use syn_dcp to avoid ip_catalog timestamp overflow bug in 2019.1)
-export_design -format syn_dcp
+# 6. Export RTL
+# NOTE: export_design fails on Vivado 2019.1 due to a timestamp overflow bug
+# (core_revision exceeds 32-bit int after year 2024).
+# The generated RTL (Verilog + VHDL) is already available under:
+#   sobel_hls/solution1/syn/verilog/
+#   sobel_hls/solution1/syn/vhdl/
+# export_design -format syn_dcp
 
 exit
