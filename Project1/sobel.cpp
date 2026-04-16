@@ -3,7 +3,7 @@
 // Sobel Edge Detection Filter
 // Synthesizable with Vivado HLS — no pragmas (default scheduling)
 
-void sobel_filter(pixel_t *src, pixel_t *dst) {
+void sobel_filter(pixel_t src[HEIGHT * WIDTH], pixel_t dst[HEIGHT * WIDTH]) {
 
     // Sobel kernels
     const int Gx[3][3] = {

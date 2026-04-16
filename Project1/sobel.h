@@ -6,6 +6,6 @@
 
 typedef unsigned char pixel_t;
 
-void sobel_filter(pixel_t *src, pixel_t *dst);
+void sobel_filter(pixel_t src[HEIGHT * WIDTH], pixel_t dst[HEIGHT * WIDTH]);
 
 #endif // SOBEL_H
