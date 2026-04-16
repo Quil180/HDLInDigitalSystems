@@ -22,7 +22,7 @@ csim_design
 csynth_design
 
 # 5. C/RTL Co-Simulation (VHDL as specified in project)
-cosim_design -tool auto -rtl vhdl
+cosim_design -tool auto -rtl verilog
 
 # 6. Export RTL / IP
 export_design -format ip_catalog
