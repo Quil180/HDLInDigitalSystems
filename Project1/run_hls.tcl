@@ -24,7 +24,7 @@ csynth_design
 # 5. C/RTL Co-Simulation (VHDL as specified in project)
 cosim_design -tool auto -rtl verilog
 
-# 6. Export RTL / IP
-export_design -format ip_catalog
+# 6. Export RTL (use syn_dcp to avoid ip_catalog timestamp overflow bug in 2019.1)
+export_design -format syn_dcp
 
 exit
