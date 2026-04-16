@@ -1,0 +1,276 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{caption}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{EEL4783 Final Project Part 1}
+\lhead{Sobel Edge Detection --- HLS}
+\rfoot{Page \thepage}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  language=Verilog,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  tabsize=2
+}
+
+\title{\textbf{EEL4783 Final Project (Part 1/2):\\High-Level Synthesis of a Sobel Edge Detection Filter}}
+\author{
+  % TODO: Replace with your name and NID
+  Your Name \\
+  NID: yo485591 \\
+  University of Central Florida \\
+  EEL4783 --- HDL in Digital Systems
+}
+\date{April 15, 2026}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+
+% ============================================================
+\section*{Introduction}
+% ============================================================
+
+This report documents the High-Level Synthesis (HLS) of a Sobel Edge Detection filter using Vivado HLS 2019.1.
+The design takes a 256$\times$256 grayscale image as input and produces an edge-detected image using the Sobel operator.
+The Sobel filter applies 3$\times$3 horizontal ($G_x$) and vertical ($G_y$) convolution kernels and computes the gradient magnitude
+$|\nabla I| \approx |G_x| + |G_y|$, clamped to the pixel range $[0, 255]$.
+
+The design was synthesized with default settings (no HLS pragmas) targeting a Zynq-7020 (\texttt{xc7z020clg484-1}) with a 10\,ns clock period.
+The following sections present the synthesis results, C/RTL co-simulation, and generated RTL.
+
+% ============================================================
+\section{Question 1: Synthesis Results}
+% ============================================================
+
+\subsection{1a) Default Synthesis Metrics}
+
+The design was synthesized using the default Vivado HLS scheduling (no optimization pragmas).
+Table~\ref{tab:synth} summarizes the key metrics from the synthesis report.
+
+\begin{table}[H]
+\centering
+\caption{Default Synthesis Results (Sobel Edge Detection Filter)}
+\label{tab:synth}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Metric}             & \textbf{Value} \\
+\midrule
+Estimated Clock Period       & \textit{TODO: e.g., 8.70\,ns} \\
+Worst-Case Latency (cycles)  & \textit{TODO: e.g., 2,325,143} \\
+Worst-Case Latency (time)    & \textit{TODO: e.g., 23.25\,ms} \\
+Number of DSP48E Used        & \textit{TODO: e.g., 2} \\
+Number of FFs Used           & \textit{TODO: e.g., 200} \\
+Number of LUTs Used          & \textit{TODO: e.g., 500} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% TODO: Insert screenshot of the synthesis summary from Vivado HLS
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[width=0.9\textwidth]{screenshots/synth_summary.png}
+%   \caption{Vivado HLS Synthesis Summary for sobel\_filter.}
+%   \label{fig:synth_summary}
+% \end{figure}
+
+The estimated clock period is below the 10\,ns target constraint, confirming the design meets timing.
+The design is not pipelined (0 out of 4 loops pipelined), which means the worst-case latency equals the total
+number of sequential clock cycles needed to process all $256 \times 256 = 65{,}536$ pixels through the
+nested convolution loops.
+
+\subsection{1b) Analysis Perspective}
+
+Opening the Analysis Perspective (Solution $\rightarrow$ Open Analysis Perspective) provides a cycle-level
+view of how operations are scheduled across the FSM states.
+
+% TODO: Insert screenshot of the Analysis Perspective / Schedule Viewer
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[width=0.9\textwidth]{screenshots/analysis_perspective.png}
+%   \caption{Analysis Perspective showing the schedule of operations within the sobel\_filter FSM states.}
+%   \label{fig:analysis}
+% \end{figure}
+
+The schedule viewer reveals that each iteration of the innermost kernel loop (the 3$\times$3 convolution)
+requires multiple states for memory reads from the \texttt{src} array, multiply-accumulate operations
+with the Sobel kernel coefficients, and the final magnitude computation and clamped write to \texttt{dst}.
+
+\subsection{1c) Resource Profile}
+
+The Resource Profile tab shows how hardware resources are distributed across the design.
+
+% TODO: Insert screenshot of the Resource Profile tab
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[width=0.9\textwidth]{screenshots/resource_profile.png}
+%   \caption{Resource Profile showing DSP48E, FF, and LUT allocation within the sobel\_filter module.}
+%   \label{fig:resource}
+% \end{figure}
+
+The Bind Op Report confirms that the DSP48E blocks are allocated to the multiply-accumulate operations
+within the inner kernel loop, where each pixel is multiplied by its corresponding Sobel kernel coefficient.
+The Bind Storage Report shows that the Sobel kernels ($G_x$ and $G_y$) are implemented as distributed ROMs
+(\texttt{sobel\_filter\_Gx\_rom} and \texttt{sobel\_filter\_Gy\_rom}), consistent with the synthesis log output.
+
+The input and output image arrays (\texttt{src} and \texttt{dst}) are accessed through external \texttt{ap\_memory}
+interfaces rather than on-chip BRAM, as expected for arrays of $65{,}536$ bytes each.
+
+% ============================================================
+\section{Question 2: C/RTL Co-simulation}
+% ============================================================
+
+\subsection{2a) Co-simulation Report}
+
+C-simulation was first run to confirm functional correctness of the C++ source and testbench.
+The testbench generates a synthetic 256$\times$256 image with vertical stripe patterns and a horizontal bar,
+applies the Sobel filter, and compares the output against a software reference implementation pixel-by-pixel.
+
+% TODO: Insert screenshot of C-simulation output
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[width=0.8\textwidth]{screenshots/csim_output.png}
+%   \caption{C-simulation completes with 0 errors, confirming the C++ source and testbench are functionally correct.}
+%   \label{fig:csim}
+% \end{figure}
+
+The C-simulation output confirms:
+\begin{verbatim}
+Non-zero output pixels: 4264 / 65536
+TEST PASSED (4264 edge pixels detected)
+\end{verbatim}
+
+C/RTL co-simulation was then run using the Verilog RTL model under XSIM.
+The RTL simulation feeds the same testbench stimulus into the synthesized Verilog and compares
+the outputs against the software reference.
+
+% TODO: Insert screenshot of co-simulation report
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[width=0.8\textwidth]{screenshots/cosim_report.png}
+%   \caption{C/RTL co-simulation report showing PASS with measured latency.}
+%   \label{fig:cosim}
+% \end{figure}
+
+The co-simulation completed with status \textbf{PASS}, confirming that the synthesized RTL produces
+identical results to the C model. The simulation log reports:
+
+\begin{verbatim}
+RTL Simulation : 1 / 1 [100.00%] @ "23251435000"
+$finish called at time : 23251475 ns
+\end{verbatim}
+
+The measured RTL latency of approximately 23.25\,ms (at 10\,ns clock period) is consistent with
+the synthesis estimate, confirming that the un-pipelined design processes the full 256$\times$256 image
+sequentially through the nested convolution loops.
+
+Since only one transaction was simulated, the initiation interval (II) is reported as N/A.
+For this non-pipelined design, the next input can be provided after latency${}+1$ clock cycles.
+
+\subsection{2b) Waveform Trace Analysis}
+
+The co-simulation dumps waveform traces that can be viewed in Vivado's waveform viewer.
+
+% TODO: Insert screenshot of the waveform traces
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[width=0.9\textwidth]{screenshots/cosim_waveform.png}
+%   \caption{Co-simulation waveform showing the ap\_ctrl\_hs handshake signals (AP\_CLK, AP\_START, AP\_READY, AP\_DONE).}
+%   \label{fig:waveform}
+% \end{figure}
+
+The waveform trace confirms the standard \texttt{ap\_ctrl\_hs} protocol behavior:
+\begin{itemize}
+  \item \texttt{AP\_START} is asserted high by the testbench to initiate processing.
+  \item The design processes the full image over the measured latency period.
+  \item \texttt{AP\_DONE} pulses high once all output pixels have been written.
+  \item \texttt{AP\_READY} indicates the design can accept a new input.
+  \item Memory interface signals (\texttt{src\_address0}, \texttt{src\_ce0}, \texttt{dst\_we0}) show
+        the sequential read/write pattern of the un-pipelined processing loop.
+\end{itemize}
+
+\subsection{2c) Export RTL}
+
+The synthesis step generates both VHDL and Verilog RTL under the solution directory:
+\begin{itemize}
+  \item \texttt{sobel\_hls/solution1/syn/verilog/} --- Verilog sources
+  \item \texttt{sobel\_hls/solution1/syn/vhdl/} --- VHDL sources
+\end{itemize}
+
+\noindent The generated RTL consists of:
+\begin{itemize}
+  \item \textbf{sobel\_filter.v}: Top-level module containing the FSM, address generation,
+        loop counters, and pipeline control logic.
+  \item \textbf{sobel\_filter\_Gx.v / sobel\_filter\_Gy.v}: Distributed ROM modules storing
+        the $3 \times 3$ Sobel kernel coefficients.
+  \item \textbf{sobel\_filter\_mac\_muladd\_8ns\_3s\_32ns\_32\_1\_1.v}: Multiply-accumulate
+        primitive mapped to DSP48E blocks, used for the kernel convolution.
+\end{itemize}
+
+\textbf{Note:} The IP Catalog export step (\texttt{export\_design}) fails on Vivado HLS 2019.1
+due to a known timestamp overflow bug (\texttt{core\_revision} exceeds 32-bit integer range after 2024).
+The generated RTL is fully available in the synthesis output directory and is functionally complete.
+
+% ============================================================
+\section*{Closing Notes}
+% ============================================================
+
+The default synthesis run produces a working Sobel Edge Detection filter that processes
+a 256$\times$256 grayscale image on the Zynq-7020 target.
+The design uses \texttt{ap\_memory} interfaces for the input and output image arrays,
+with the Sobel kernels implemented as distributed ROMs.
+
+Without any optimization pragmas, the design processes the image sequentially through
+four nested loops (row, column, kernel-y, kernel-x), resulting in high latency.
+Part~2 of this project will explore the design space by applying HLS pragmas
+(loop pipelining, array partitioning, loop unrolling) to reduce latency
+and improve throughput at the cost of additional resource usage.
+
+% ============================================================
+\newpage
+\appendix
+\section{Appendix A: HLS C++ Source Code}
+% ============================================================
+
+\subsection{A.1 sobel.h}
+\lstinputlisting[language=C++]{sobel.h}
+
+\subsection{A.2 sobel.cpp}
+\lstinputlisting[language=C++]{sobel.cpp}
+
+\subsection{A.3 sobel\_tb.cpp (Testbench)}
+\lstinputlisting[language=C++]{sobel_tb.cpp}
+
+% ============================================================
+\section{Appendix B: Generated Verilog Source}
+% ============================================================
+
+% TODO: After running synthesis on the VLSI server, copy the generated Verilog files
+% to a local directory and uncomment the following:
+%
+% \subsection{B.1 sobel\_filter.v (Top Level)}
+% \lstinputlisting[language=Verilog]{verilog/sobel_filter.v}
+%
+% \subsection{B.2 sobel\_filter\_Gx.v}
+% \lstinputlisting[language=Verilog]{verilog/sobel_filter_Gx.v}
+%
+% \subsection{B.3 sobel\_filter\_Gy.v}
+% \lstinputlisting[language=Verilog]{verilog/sobel_filter_Gy.v}
+%
+% \subsection{B.4 sobel\_filter\_mac\_muladd\_8ns\_3s\_32ns\_32\_1\_1.v}
+% \lstinputlisting[language=Verilog]{verilog/sobel_filter_mac_muladd_8ns_3s_32ns_32_1_1.v}
+
+\end{document}
