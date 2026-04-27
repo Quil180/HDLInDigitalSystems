@@ -74,13 +74,15 @@ module dot_product_tb;
         @(posedge clk);
 
         // Run 20 randomized test cases
-        repeat (20) begin
+        $display("\nStarting Randomized Tests...");
+        for (int i = 1; i <= 20; i++) begin
             if (!tr.randomize()) $fatal("Randomization failed");
             
             // Driving inputs
-            foreach (a[i]) a[i] = tr.a[i];
-            foreach (b[i]) b[i] = tr.b[i];
+            foreach (a[j]) a[j] = tr.a[j];
+            foreach (b[j]) b[j] = tr.b[j];
             
+            $display("[Time %0t] Iteration %0d/20: Inputs Driven", $time, i);
             @(posedge clk);
         end
 

@@ -30,14 +30,17 @@ if {[catch {exec {*}$compile_cmd} compile_out]} {
 
 # 2. Simulation
 puts "\nStep 2: Running Simulation..."
-# -ucli: Use Universal Command Line Interface
-# -do: Run commands (run all and then quit)
-set sim_cmd "./$OUTPUT -ucli -do \"run -all; quit\""
+# Open the simulation process for reading
+set sim_pipe [open "|./$OUTPUT -ucli -do \"run -all; quit\"" r]
 
-if {[catch {exec {*}$sim_cmd} sim_out]} {
-    puts "Simulation Output/Errors:\n$sim_out"
-} else {
-    puts $sim_out
+# Print each line as it comes from the simulation
+while {[gets $sim_pipe line] >= 0} {
+    puts $line
+    flush stdout
+}
+
+if {[catch {close $sim_pipe} sim_err]} {
+    puts "Simulation finished with possible error: $sim_err"
 }
 
 puts "\n===================================================="
