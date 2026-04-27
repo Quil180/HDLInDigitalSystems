@@ -44,7 +44,7 @@ module dot_product_tb;
     // Verdi Waveform Dumping
     initial begin
         $fsdbDumpfile("inter.fsdb");
-        $fsdbDumpvars(0, dot_product_tb);
+        $fsdbDumpvars(0, dot_product_tb, "+all", "+mda");
     end
 
     // Reference model
