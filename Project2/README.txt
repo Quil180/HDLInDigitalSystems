@@ -9,31 +9,35 @@ with SystemVerilog Assertions (SVA) for verification.
 
 Files:
 - dot_product.sv: RTL implementation of the pipelined engine.
-- dot_product_tb.sv: Constrained randomized testbench with SVA.
+- dot_product_tb.sv: Constrained randomized testbench with SVA and FSDB dumping.
+- run_vcs.tcl: Automation script for compilation and simulation.
 - README.txt: This file.
 
-Simulation Instructions (Using Questasim/ModelSim):
---------------------------------------------------
-1. Log into the VLSI server.
-2. Create a library:
-   vlib work
-3. Compile the design and testbench:
-   vlog dot_product.sv dot_product_tb.sv
-4. Run the simulation:
-   vsim -c dot_product_tb -do "run -all; quit"
-   (Omit -c and the -do string to run in GUI mode for waveforms).
+Simulation Instructions (Using VCS Automation Script):
+------------------------------------------------------
+1. Ensure 'vcs' and 'tclsh' are in your PATH.
+2. Run the automation script:
+   tclsh run_vcs.tcl
+   
+This script handles compilation, elabration, and running the simulation 
+automatically.
 
-Simulation Instructions (Using VCS):
-------------------------------------
-1. Compile:
-   vcs -sverilog dot_product.sv dot_product_tb.sv -o simv
-2. Run:
-   ./simv
+Simulation Instructions (Manual VCS Commands):
+----------------------------------------------
+1. Compile and Elaboration:
+   vcs -sverilog -full64 -debug_acc+all -kdb dot_product.sv dot_product_tb.sv -o simv
+2. Run Simulation:
+   ./simv -ucli -do "run; quit"
+   
+This will generate 'inter.fsdb' for waveform viewing.
 
-Waveforms:
-----------
-To generate screenshots for the report:
-1. Run the simulation in GUI mode (e.g., 'vsim dot_product_tb').
-2. Add signals 'clk', 'rst', 'a', 'b', and 'y' to the wave window.
-3. Run for sufficient time (e.g., 'run 300ns').
-4. Capture 3 distinct test cases showing the 2-cycle latency between input change and output result.
+Waveforms (Using Synopsys Verdi):
+---------------------------------
+1. Open Verdi with the simulation database:
+   verdi -dbdir simv.daidir &
+2. Open the Waveform window (Ctrl+W).
+3. In the Waveform window, go to File -> Import Waveform and select 'inter.fsdb'.
+4. In the main Verdi window, select 'dot_product_tb' in the Hierarchy pane.
+5. Drag signals 'clk', 'rst', 'a', 'b', and 'y' into the Waveform window.
+6. To see decimal values, right-click signals in the Waveform window and 
+   select Radix -> Decimal (Signed).
