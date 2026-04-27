@@ -24,16 +24,9 @@ set_output_delay 2.0 -clock clk [all_outputs]
 compile -map_effort high
 
 # --- 4. Generate Reports ---
-# Timing Report (Slack/Fmax)
-report_timing > reports/timing_pipelined.txt
-# Resource/Area Report (Registers/LUTs)
-report_area > reports/area_pipelined.txt
-# QoR Summary
-report_qor > reports/qor_pipelined.txt
-
 sh mkdir -p reports
-mv timing_pipelined.txt reports/
-mv area_pipelined.txt reports/
-mv qor_pipelined.txt reports/
+report_timing > reports/timing_pipelined.txt
+report_area > reports/area_pipelined.txt
+report_qor > reports/qor_pipelined.txt
 
 quit
