@@ -245,20 +245,21 @@ spans the full signed multiplication and the 4-input addition tree. The 2-stage
 pipeline isolates these operations, allowing for a significantly higher maximum 
 clock frequency ($F_{max}$). 
 
-Table~\ref{tab:timing} shows the estimated timing improvement based on synthesis 
-comparisons (targeting a generic 10ns clock period). The pipelined design achieves 
-a nearly 2x improvement in $F_{max}$ by cutting the logic depth in half.
+Table~\ref{tab:timing} shows the timing improvement based on synthesis 
+using the \texttt{class.db} library and a 10ns target clock. The pipelined 
+design significantly reduces the critical path by isolating the 
+multiplier delay from the subsequent addition stages.
 
 \begin{table}[H]
 \centering
-\caption{Synthesis Timing Comparison}
+\caption{Synthesis Timing Comparison (Synopsys Design Compiler)}
 \label{tab:timing}
 \begin{tabular}{@{}lccc@{}}
 \toprule
-\textbf{Design} & \textbf{Crit. Path Delay} & \textbf{Slack (10ns)} & \textbf{Est. $F_{max}$} \\
+\textbf{Design} & \textbf{Crit. Path (Arrival)} & \textbf{Slack (10ns)} & \textbf{Est. $F_{max}$} \\
 \midrule
-Single-Cycle (Registered Out) & 8.45\,ns & 1.55\,ns & 118\,MHz \\
-\textbf{Pipelined (2-Stage)}  & \textbf{4.62\,ns} & \textbf{5.38\,ns} & \textbf{216\,MHz} \\
+Single-Cycle (Registered Out) & 16.28\,ns & -7.08\,ns & 58.6\,MHz \\
+\textbf{Pipelined (2-Stage)}  & \textbf{13.03\,ns} & \textbf{-3.83\,ns} & \textbf{72.3\,MHz} \\
 \bottomrule
 \end{tabular}
 \end{table}
