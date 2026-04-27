@@ -4,6 +4,12 @@
 This project implements a 4-element dot product engine in SystemVerilog. 
 It features a 2-stage pipeline (Stage 1: Multiplications, Stage 2: Summation) for high-performance operation and includes a constrained randomized testbench with SystemVerilog Assertions (SVA) for verification.
 
+### Key Features
+- **Pipelined Architecture**: 2-stage synchronous datapath for throughput.
+- **Handshake Protocol**: Added `vld_in` and `vld_out` signals to gate valid data and ignore pipeline "warm-up" transients.
+- **Signed Arithmetic**: Uses `logic signed` throughout to correctly handle two's complement 8-bit inputs (-128 to 127).
+- **Automated Verification**: SVA properties ensure cycle-accurate correctness matching the 2-cycle latency.
+
 ## Project Structure
 - `src/`: Core RTL implementation files.
   - `dot_product.sv`: Pipelined dot product engine.

@@ -117,12 +117,10 @@ The design implements a 4-element dot product engine using a 2-stage synchronous
 pipeline to maximize throughput.
 
 \begin{itemize}
+    \item \textbf{Handshake Control:} The module includes \texttt{vld\_in} and \texttt{vld\_out} signals. This ensures that the downstream logic only samples \texttt{y} when the 2-stage pipeline is fully saturated and the output is valid.
     \item \textbf{Stage 1 (Multiplication):} Four 8-bit signed multipliers compute
-          $P_i = A_i \times B_i$ in parallel. These results are captured in the
-          \texttt{products\_reg} array on the rising edge of the clock.
-    \item \textbf{Stage 2 (Addition):} An adder tree (implemented as a single-cycle sum
-          for this width) aggregates the four 16-bit products from the pipeline registers
-          and drives the final output \texttt{y}.
+          $P_i = A_i \times B_i$ in parallel. These results and the \texttt{vld\_in} state are captured in pipeline registers on the rising edge of the clock.
+    \item \textbf{Stage 2 (Addition):} An adder tree aggregates the four 16-bit products. The \texttt{vld\_out} signal is asserted simultaneously with the final result \texttt{y}, two cycles after the corresponding input.
 \end{itemize}
 
 \begin{figure}[H]
@@ -186,8 +184,11 @@ Correctness was verified using a fully self-checking testbench built around
 \textbf{Constrained Randomization}. A \texttt{dot\_product\_transaction} class
 generated 20 unique test cases per simulation run. Pass/fail determination is
 handled \emph{automatically} by the SVA concurrent assertion
-\texttt{assert\_dot\_product} described below; no manual inspection of waveforms
+\texttt{assert\_dot\_product}; no manual inspection of waveforms
 is required for functional sign-off.
+
+\textbf{Signed Arithmetic and Radix:}
+A critical aspect of verification was ensuring correct two's complement interpretation. For example, an input vector of \texttt{\{219, 10, 44, 66\}} is interpreted as \texttt{\{-37, 10, 44, 66\}} in signed 8-bit format. The testbench verifies that the output correctly reflects the signed sum of products. To view these correctly in the simulator, the signal radix must be set to \textbf{Decimal (Signed)}.
 
 The constraint \texttt{boundary\_values} biases randomization to guarantee
 coverage of all required corner cases:
@@ -210,13 +211,12 @@ coverage of all required corner cases:
 \end{itemize}
 
 \textbf{SystemVerilog Assertions (Extra Credit):}
-I implemented the concurrent assertion property \texttt{p\_check\_result} using a
-local variable to capture the reference result at the moment inputs are sampled
-($T_0$). The \texttt{\#\#2} delay operator then checks that \texttt{y} equals the
-captured reference exactly two clock cycles later, matching the 2-stage pipeline
-latency. Any mismatch triggers a \texttt{\$error} with both the actual and expected
-values, providing immediate, cycle-accurate feedback without manual waveform
-inspection.
+I implemented the concurrent assertion property \texttt{p\_check\_result} using an
+implication operator (\texttt{|->}). When \texttt{vld\_in} is high, it captures the
+reference result; exactly two clock cycles later (\texttt{\#\#2}), it asserts that
+\texttt{vld\_out} is high and the output \texttt{y} matches the captured reference.
+Any mismatch triggers a \texttt{\$error} with both the actual and expected
+values, providing immediate, cycle-accurate feedback.
 
 % TODO: Replace with your waveform screenshot
 \begin{figure}[H]
