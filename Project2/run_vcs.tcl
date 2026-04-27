@@ -38,7 +38,7 @@ puts "\nStep 2: Running Simulation..."
 
 # Create a temporary .do file for UCLI commands
 set do_file [open "sim.do" w]
-puts $do_file "run -all"
+puts $do_file "run"
 puts $do_file "quit"
 close $do_file
 

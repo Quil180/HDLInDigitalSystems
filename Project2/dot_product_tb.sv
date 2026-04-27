@@ -67,6 +67,7 @@ module dot_product_tb;
         dot_product_transaction tr;
         tr = new();
 
+        $display("\n[Time %0t] Simulation Started", $time);
         // Initialize
         rst = 1;
         @(posedge clk);
