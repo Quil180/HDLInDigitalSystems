@@ -24,6 +24,8 @@ module dot_product_tb;
 
     logic                      clk;
     logic                      rst;
+    logic                      vld_in;
+    logic                      vld_out;
     logic signed [7:0] a [3:0];
     logic signed [7:0] b [3:0];
     logic signed [15:0] y;
@@ -35,7 +37,7 @@ module dot_product_tb;
         .OUT_WIDTH(OUT_WIDTH)
     ) dut (.*);
 
-    // Clock generation
+    // Clock generation - Guaranteed synchronous 10ns period
     initial begin
         clk = 0;
         forever #(CLK_PERIOD/2) clk = ~clk;
@@ -67,9 +69,10 @@ module dot_product_tb;
         
         // Synchronous Reset
         rst = 1;
+        vld_in = 0;
         foreach (a[i]) a[i] = 0;
         foreach (b[i]) b[i] = 0;
-        repeat (2) @(posedge clk);
+        repeat (3) @(posedge clk);
         
         @(negedge clk);
         rst = 0;
@@ -81,12 +84,17 @@ module dot_product_tb;
             if (!tr.randomize()) $fatal("Randomization failed");
             
             @(negedge clk);
+            vld_in = 1;
             foreach (a[j]) a[j] = tr.a[j];
             foreach (b[j]) b[j] = tr.b[j];
             
-            $display("[Time %0t] Iteration %0d: Driven A={%d,%d,%d,%d} B={%d,%d,%d,%d} | Expected Y (at +3 cycles) = %d", 
+            $display("[Time %0t] Iteration %0d: Driving A={%d,%d,%d,%d} B={%d,%d,%d,%d} | Expected Y (at +2 cycles) = %d", 
                      $time, i, a[3], a[2], a[1], a[0], b[3], b[2], b[1], b[0], get_expected(a, b));
         end
+
+        // Finish driving
+        @(negedge clk);
+        vld_in = 0;
 
         repeat (10) @(posedge clk);
         $display("Done: 20 Randomized Tests Completed.");
@@ -94,18 +102,24 @@ module dot_product_tb;
     end
 
     // --- SystemVerilog Assertions (Extra Credit) ---
-    // In a 2-stage pipeline with registered output:
-    // T0: Inputs sampled at posedge
+    // Pipeline Latency = 2 cycles
+    // T0: vld_in high, inputs sampled at posedge
     // T1: products_reg updated (Stage 1)
-    // T2: y updated (Stage 2)
-    // T3: SVA samples y (Preponed region at T3 edge sees y set at T2)
+    // T2: y updated, vld_out goes high (Stage 2)
     property p_check_result;
         logic signed [15:0] local_exp;
         @(posedge clk) disable iff (rst)
-        (1, local_exp = get_expected(a, b)) ##2 (y == local_exp);
+        (vld_in, local_exp = get_expected(a, b)) ##2 (vld_out && (y == local_exp));
     endproperty
 
     assert_dot_product: assert property (p_check_result)
         else $error("Mismatch! Y=%d, Expected=%d", y, $past(get_expected(a, b), 2));
+
+    // Monitor valid outputs
+    always @(posedge clk) begin
+        if (vld_out && !rst) begin
+            $display("[Time %0t] VALID OUT: Y=%d", $time, y);
+        end
+    end
 
 endmodule
