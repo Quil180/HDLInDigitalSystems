@@ -69,9 +69,12 @@ module dot_product_tb;
 
         $display("\n[Time %0t] Simulation Started", $time);
         // Initialize
-        rst = 1;
-        @(posedge clk);
-        rst = 0;
+        rst <= 1;
+        foreach (a[i]) a[i] <= 0;
+        foreach (b[i]) b[i] <= 0;
+        
+        repeat (2) @(posedge clk);
+        rst <= 0;
         @(posedge clk);
 
         // Run 20 randomized test cases
@@ -79,12 +82,12 @@ module dot_product_tb;
         for (int i = 1; i <= 20; i++) begin
             if (!tr.randomize()) $fatal("Randomization failed");
             
-            // Driving inputs
-            foreach (a[j]) a[j] = tr.a[j];
-            foreach (b[j]) b[j] = tr.b[j];
+            // Driving inputs with non-blocking assignments
+            foreach (a[j]) a[j] <= tr.a[j];
+            foreach (b[j]) b[j] <= tr.b[j];
             
-            $display("[Time %0t] Iteration %0d/20: Inputs Driven", $time, i);
             @(posedge clk);
+            $display("[Time %0t] Iteration %0d/20: Inputs Sampled by DUT", $time, i);
         end
 
         // Wait for pipeline to drain
@@ -97,12 +100,14 @@ module dot_product_tb;
     // --- SystemVerilog Assertions (Extra Credit) ---
     // Property: The output 'y' should match the expected value 2 cycles after inputs are sampled
     property p_check_result;
-        logic signed [7:0] sa [4];
-        logic signed [7:0] sb [4];
-        (1, sa = a, sb = b) ##2 (y == get_expected(sa, sb));
+        logic signed [7:0] local_a [4];
+        logic signed [7:0] local_b [4];
+        logic signed [15:0] local_expected;
+        (1, local_a = a, local_b = b, local_expected = get_expected(a, b)) ##2 (y == local_expected);
     endproperty
 
     assert_dot_product: assert property (@(posedge clk) disable iff (rst) p_check_result)
-        else $error("Mismatch! Y=%d, Expected=%d", y, get_expected(a, b)); // Note: get_expected(a,b) here is just for display, the property uses local variables
+        else $error("Mismatch! Y=%d, Expected=%d", y, $past(get_expected(a, b), 2)); 
+        // Note: $past is used here for the display message to match the 2-cycle latency
 
 endmodule
