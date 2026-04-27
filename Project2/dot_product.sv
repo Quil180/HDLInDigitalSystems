@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 // EEL4783: Final Project Part 2
 // Project Title: "The 4-Element Dot Product Engine"
 // Description: A pipelined 4-element dot product accelerator.
