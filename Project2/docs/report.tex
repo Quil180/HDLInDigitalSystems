@@ -1,0 +1,221 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{microtype}
+
+\hyphenation{System-Veri-log}
+
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{13.6pt}
+\addtolength{\topmargin}{-1.6pt}
+\rhead{EEL4783 Final Project Part 2}
+\lhead{Dot Product Engine --- RTL}
+\rfoot{Page \thepage}
+
+% --- Color definitions for syntax highlighting ---
+\definecolor{sv-keyword}{RGB}{0, 0, 200}
+\definecolor{sv-type}{RGB}{140, 0, 140}
+\definecolor{sv-comment}{RGB}{60, 128, 49}
+\definecolor{sv-string}{RGB}{163, 21, 21}
+\definecolor{sv-bg}{RGB}{250, 250, 250}
+
+% --- SystemVerilog language definition ---
+\lstdefinelanguage{SystemVerilog}{
+  morekeywords=[1]{
+    module, endmodule, input, output, inout, logic, wire, reg,
+    parameter, localparam, integer, int, bit, byte, shortint, longint,
+    always, always_ff, always_comb, always_latch,
+    if, else, case, casex, casez, endcase, for, foreach, while, repeat, forever,
+    begin, end, fork, join, join_any, join_none,
+    assign, initial, final,
+    posedge, negedge, edge,
+    signed, unsigned,
+    function, endfunction, automatic, return,
+    task, endtask,
+    class, endclass, new, rand, randc, constraint,
+    property, endproperty, assert, assume, cover, disable, iff,
+    sequence, endsequence,
+    program, endprogram, interface, endinterface, clocking, endclocking,
+    typedef, struct, union, enum, packed,
+    import, export, package, endpackage,
+    generate, endgenerate, genvar,
+    timescale, default
+  },
+  morekeywords=[2]{
+    \$display, \$monitor, \$time, \$finish, \$stop, \$fatal, \$error,
+    \$warning, \$info, \$past, \$rose, \$fell, \$stable,
+    \$random, \$urandom, \$urandom_range,
+    \$readmemh, \$readmemb, \$dumpfile, \$dumpvars
+  },
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]"
+  % Note: single-quote intentionally omitted — lstlisting would treat
+  % SystemVerilog cast syntax (e.g. signed'(...)) as an unterminated string.
+}
+
+\lstset{
+  language=SystemVerilog,
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{sv-bg},
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{gray!40},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  tabsize=2,
+  showstringspaces=false,
+  keywordstyle=[1]\color{sv-keyword}\bfseries,
+  keywordstyle=[2]\color{sv-type}\bfseries,
+  commentstyle=\color{sv-comment}\itshape,
+  stringstyle=\color{sv-string},
+}
+
+\title{\textbf{EEL4783 Final Project (Part 2):\\Design and Verification of a 4-Element Dot Product Engine}}
+\author{
+  Yousef Awad \\
+  University of Central Florida \\
+  EEL4783 --- HDL in Digital Systems
+}
+\date{April 26, 2026}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+
+% ============================================================
+\section{Design Choice}
+% ============================================================
+For this project, I chose the \textbf{RTL (SystemVerilog)} implementation track.
+This decision was driven by the desire to implement a high-performance \textbf{2-stage pipeline}
+to earn extra credit. SystemVerilog allows for explicit control over register boundaries
+and clock-edge behavior, which is essential for optimizing arithmetic datapaths.
+Furthermore, using SystemVerilog permitted the integration of \textbf{SystemVerilog Assertions (SVA)}
+and constrained randomization in the testbench, providing a more robust verification
+environment than standard Verilog or HLS defaults.
+
+% ============================================================
+\section{Architecture}
+% ============================================================
+The design implements a 4-element dot product engine using a 2-stage synchronous
+pipeline to maximize throughput.
+
+\begin{itemize}
+    \item \textbf{Stage 1 (Multiplication):} Four 8-bit signed multipliers compute
+          $P_i = A_i \times B_i$ in parallel. These results are captured in the
+          \texttt{products\_reg} array on the rising edge of the clock.
+    \item \textbf{Stage 2 (Addition):} An adder tree (implemented as a single-cycle sum
+          for this width) aggregates the four 16-bit products from the pipeline registers
+          and drives the final output \texttt{y}.
+\end{itemize}
+
+% TODO: Replace with your actual block diagram image
+\begin{figure}[H]
+  \centering
+  %\includegraphics[width=0.6\textwidth]{figures/block_diagram.png}
+  \framebox(200,100){Block Diagram Placeholder}
+  \caption{Architectural Block Diagram showing the 2-stage pipeline (Multipliers $\rightarrow$ Regs $\rightarrow$ Adder).}
+  \label{fig:arch}
+\end{figure}
+
+% ============================================================
+\section{Verification}
+% ============================================================
+Correctness was verified using a fully self-checking testbench built around
+\textbf{Constrained Randomization}. A \texttt{dot\_product\_transaction} class
+generated 20 unique test cases per simulation run. Pass/fail determination is
+handled \emph{automatically} by the SVA concurrent assertion
+\texttt{assert\_dot\_product} described below; no manual inspection of waveforms
+is required for functional sign-off.
+
+The constraint \texttt{boundary\_values} biases randomization to guarantee
+coverage of all required corner cases:
+\begin{itemize}
+  \item \textbf{Maximum positive value} --- \texttt{8'h7F} ($+127$), the largest
+        representable 8-bit signed integer.
+  \item \textbf{Maximum negative value} --- \texttt{8'h80} ($-128$), the most
+        negative 8-bit two's complement value.
+  \item \textbf{Zero inputs} --- randomly generated values naturally include zero;
+        the \texttt{dist} weight of \texttt{[-127:126]} ensures the full mid-range,
+        including zero, is exercised across 20 iterations.
+  \item \textbf{Overflow prevention} --- the worst-case product
+        ($-128 \times -128 = 16{,}384$) fits in 16 bits, and the worst-case sum
+        ($4 \times 16{,}384 = 65{,}536$) is representable as a 16-bit unsigned
+        value; the signed 16-bit output is therefore sufficient to prevent overflow
+        for all legal 8-bit signed inputs.
+  \item \textbf{Mixed-sign vectors} --- the random distribution naturally produces
+        vectors where some elements are positive and others negative, verifying
+        correct two's complement arithmetic throughout the pipeline.
+\end{itemize}
+
+\textbf{SystemVerilog Assertions (Extra Credit):}
+I implemented the concurrent assertion property \texttt{p\_check\_result} using a
+local variable to capture the reference result at the moment inputs are sampled
+($T_0$). The \texttt{\#\#2} delay operator then checks that \texttt{y} equals the
+captured reference exactly two clock cycles later, matching the 2-stage pipeline
+latency. Any mismatch triggers a \texttt{\$error} with both the actual and expected
+values, providing immediate, cycle-accurate feedback without manual waveform
+inspection.
+
+% TODO: Replace with your waveform screenshot
+\begin{figure}[H]
+  \centering
+  %\includegraphics[width=0.9\textwidth]{screenshots/waveform.png}
+  \framebox(300,150){Simulation Waveform Placeholder}
+  \caption{Simulation trace showing the 2-cycle latency between driving A/B and the result Y.}
+  \label{fig:waveform}
+\end{figure}
+
+\pagebreak
+% ============================================================
+\section{Reflection}
+% ============================================================
+The most challenging aspect was debugging the interaction between the testbench reference
+model and the pipeline latency. Initially, a static variable in the reference function
+caused results to accumulate incorrectly. Resolving this required changing the function
+to \texttt{automatic}. Additionally, aligning the SVA sampling window (\texttt{\#\#2})
+with the preponed region of the simulator required a deep understanding of the
+SystemVerilog scheduling phases.
+
+\textbf{Pipelining and $F_{max}$ (Extra Credit):}
+Breaking the multiply-accumulate computation into two registered stages directly reduces
+the critical combinational path. In a single-cycle implementation, the critical path spans
+an 8-bit signed multiply followed by a 4-input addition before the output register.
+The 2-stage pipeline cuts this in half: Stage~1's critical path is a single 8-bit signed
+multiply into a register, and Stage~2's critical path is a 4-input 16-bit addition into
+the output register. Because the multiplier dominates delay, isolating it in its own
+stage allows the synthesizer to clock the design significantly faster, yielding a higher
+achievable $F_{max}$. This improvement would be confirmed by comparing synthesis timing
+reports between a single-cycle and pipelined implementation.
+
+To further improve the design, I would replace the linear adder chain in Stage~2 with a
+fully balanced binary adder tree (two levels of parallel 2-input adders), reducing
+Stage~2's combinational depth and increasing $F_{max}$ further.
+
+% ============================================================
+\newpage
+\appendix
+\section{Source Code}
+% ============================================================
+
+\subsection{dot\_product.sv (RTL)}
+\lstinputlisting{../dot_product.sv}
+
+\pagebreak
+\subsection{dot\_product\_tb.sv (Testbench)}
+\lstinputlisting{../dot_product_tb.sv}
+
+\end{document}
