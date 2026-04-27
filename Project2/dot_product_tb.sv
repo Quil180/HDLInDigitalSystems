@@ -41,6 +41,12 @@ module dot_product_tb;
         forever #(CLK_PERIOD/2) clk = ~clk;
     end
 
+    // Verdi Waveform Dumping
+    initial begin
+        $fsdbDumpfile("inter.fsdb");
+        $fsdbDumpvars(0, dot_product_tb);
+    end
+
     // Reference model
     function automatic signed [15:0] get_expected(
         logic signed [7:0] va [3:0],
