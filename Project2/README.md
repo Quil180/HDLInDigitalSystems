@@ -8,6 +8,7 @@ It features a 2-stage pipeline (Stage 1: Multiplications, Stage 2: Summation) fo
 - **Pipelined Architecture**: 2-stage synchronous datapath for throughput.
 - **Handshake Protocol**: Added `vld_in` and `vld_out` signals to gate valid data and ignore pipeline "warm-up" transients.
 - **Signed Arithmetic**: Uses `logic signed` throughout to correctly handle two's complement 8-bit inputs (-128 to 127).
+- **Overflow Prevention**: Increased output width to **18 bits** to accommodate the worst-case sum of products ($16,384 \times 4 = 65,536$).
 - **Automated Verification**: SVA properties ensure cycle-accurate correctness matching the 2-cycle latency.
 
 ## Project Structure

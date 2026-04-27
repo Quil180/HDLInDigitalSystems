@@ -19,7 +19,7 @@ module dot_product_tb;
 
     parameter int DATA_WIDTH = 8;
     parameter int VECTOR_SIZE = 4;
-    parameter int OUT_WIDTH = 16;
+    parameter int OUT_WIDTH = 18;
     parameter int CLK_PERIOD = 10;
 
     logic                      clk;
@@ -28,7 +28,7 @@ module dot_product_tb;
     logic                      vld_out;
     logic signed [7:0] a [3:0];
     logic signed [7:0] b [3:0];
-    logic signed [15:0] y;
+    logic signed [OUT_WIDTH-1:0] y;
 
     // Instantiate DUT
     dot_product #(
@@ -50,15 +50,15 @@ module dot_product_tb;
     end
 
     // Reference model
-    function automatic signed [15:0] get_expected(
+    function automatic signed [OUT_WIDTH-1:0] get_expected(
         logic signed [7:0] va [3:0],
         logic signed [7:0] vb [3:0]
     );
-        int sum = 0;
+        longint sum = 0;
         for (int i = 0; i < 4; i++) begin
-            sum += va[i] * vb[i];
+            sum += longint'(va[i]) * longint'(vb[i]);
         end
-        return signed'(sum[15:0]);
+        return signed'(sum[OUT_WIDTH-1:0]);
     endfunction
 
     initial begin
@@ -107,7 +107,7 @@ module dot_product_tb;
     // T1: products_reg updated (Stage 1)
     // T2: y updated, vld_out goes high (Stage 2)
     property p_check_result;
-        logic signed [15:0] local_exp;
+        logic signed [OUT_WIDTH-1:0] local_exp;
         @(posedge clk) disable iff (rst)
         vld_in |-> (1, local_exp = get_expected(a, b)) ##2 (vld_out && (y == local_exp));
     endproperty

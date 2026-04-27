@@ -7,7 +7,7 @@
 module dot_product_single #(
     parameter int DATA_WIDTH = 8,
     parameter int VECTOR_SIZE = 4,
-    parameter int OUT_WIDTH = 16
+    parameter int OUT_WIDTH = 18
 )(
     input  logic                      clk,
     input  logic                      rst,
