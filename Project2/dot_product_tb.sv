@@ -42,7 +42,7 @@ module dot_product_tb;
     end
 
     // Reference model
-    function signed [15:0] get_expected(
+    function automatic signed [15:0] get_expected(
         logic signed [7:0] va [3:0],
         logic signed [7:0] vb [3:0]
     );
@@ -96,10 +96,10 @@ module dot_product_tb;
     property p_check_result;
         logic signed [15:0] local_exp;
         @(posedge clk) disable iff (rst)
-        (1, local_exp = get_expected(a, b)) ##3 (y == local_exp);
+        (1, local_exp = get_expected(a, b)) ##2 (y == local_exp);
     endproperty
 
     assert_dot_product: assert property (p_check_result)
-        else $error("Mismatch! Y=%d, Expected=%d", y, $past(get_expected(a, b), 3));
+        else $error("Mismatch! Y=%d, Expected=%d", y, $past(get_expected(a, b), 2));
 
 endmodule
