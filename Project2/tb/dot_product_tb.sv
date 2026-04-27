@@ -109,7 +109,7 @@ module dot_product_tb;
     property p_check_result;
         logic signed [15:0] local_exp;
         @(posedge clk) disable iff (rst)
-        (vld_in, local_exp = get_expected(a, b)) ##2 (vld_out && (y == local_exp));
+        vld_in |-> (1, local_exp = get_expected(a, b)) ##2 (vld_out && (y == local_exp));
     endproperty
 
     assert_dot_product: assert property (p_check_result)
