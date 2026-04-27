@@ -36,7 +36,7 @@ static void sobel_reference(pixel_t *src, pixel_t *dst) {
 static void generate_test_image(pixel_t *img) {
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
-            // Vertical stripe pattern — strong vertical edges
+            // Vertical stripe pattern -- strong vertical edges
             if ((x / 32) % 2 == 0)
                 img[y * WIDTH + x] = 200;
             else
@@ -80,7 +80,7 @@ int main() {
         }
     }
 
-    // 5. Sanity check — edges should exist in the output
+    // 5. Sanity check -- edges should exist in the output
     int nonzero = 0;
     for (int i = 0; i < HEIGHT * WIDTH; i++)
         if (dst_hls[i] > 0) nonzero++;

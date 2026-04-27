@@ -1,7 +1,7 @@
 #include "sobel.h"
 
 // Sobel Edge Detection Filter
-// Synthesizable with Vivado HLS — no pragmas (default scheduling)
+// Synthesizable with Vivado HLS -- no pragmas (default scheduling)
 
 void sobel_filter(pixel_t src[HEIGHT * WIDTH], pixel_t dst[HEIGHT * WIDTH]) {
 
@@ -21,7 +21,7 @@ void sobel_filter(pixel_t src[HEIGHT * WIDTH], pixel_t dst[HEIGHT * WIDTH]) {
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
 
-            // Border pixels — no valid 3x3 neighborhood
+            // Border pixels -- no valid 3x3 neighborhood
             if (y == 0 || y == HEIGHT - 1 || x == 0 || x == WIDTH - 1) {
                 dst[y * WIDTH + x] = 0;
                 continue;
