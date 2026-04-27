@@ -1,8 +1,8 @@
 # TCL script to automate VCS compilation and simulation
 # To run this: tclsh run_vcs.tcl
 
-set RTL_FILES "dot_product.sv"
-set TB_FILES  "dot_product_tb.sv"
+set RTL_FILES "src/dot_product.sv"
+set TB_FILES  "tb/dot_product_tb.sv"
 set OUTPUT    "simv"
 
 puts "===================================================="
