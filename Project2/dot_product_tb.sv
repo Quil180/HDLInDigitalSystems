@@ -55,7 +55,7 @@ module dot_product_tb;
         logic signed [DATA_WIDTH-1:0] va [4],
         logic signed [DATA_WIDTH-1:0] vb [4]
     );
-        longint sum = 0;
+        int sum = 0;
         for (int i = 0; i < 4; i++) begin
             sum += va[i] * vb[i];
         end
@@ -68,26 +68,30 @@ module dot_product_tb;
         tr = new();
 
         $display("\n[Time %0t] Simulation Started", $time);
-        // Initialize
-        rst <= 1;
-        foreach (a[i]) a[i] <= 0;
-        foreach (b[i]) b[i] <= 0;
         
+        // Synchronous Reset
+        rst = 1;
+        foreach (a[i]) a[i] = 0;
+        foreach (b[i]) b[i] = 0;
         repeat (2) @(posedge clk);
-        rst <= 0;
-        @(posedge clk);
+        
+        // Drive at negedge to avoid races
+        @(negedge clk);
+        rst = 0;
+        $display("[Time %0t] Reset De-asserted", $time);
 
         // Run 20 randomized test cases
         $display("\nStarting Randomized Tests...");
         for (int i = 1; i <= 20; i++) begin
             if (!tr.randomize()) $fatal("Randomization failed");
             
-            // Driving inputs with non-blocking assignments
-            foreach (a[j]) a[j] <= tr.a[j];
-            foreach (b[j]) b[j] <= tr.b[j];
+            // Drive inputs on negedge
+            @(negedge clk);
+            foreach (a[j]) a[j] = tr.a[j];
+            foreach (b[j]) b[j] = tr.b[j];
             
-            @(posedge clk);
-            $display("[Time %0t] Iteration %0d/20: Inputs Sampled by DUT", $time, i);
+            // The DUT will sample these at the NEXT posedge
+            $display("[Time %0t] Iteration %0d/20: Inputs Driven", $time, i);
         end
 
         // Wait for pipeline to drain
@@ -98,16 +102,14 @@ module dot_product_tb;
     end
 
     // --- SystemVerilog Assertions (Extra Credit) ---
-    // Property: The output 'y' should match the expected value 2 cycles after inputs are sampled
+    // Capture expected value at posedge and check it 2 cycles later
     property p_check_result;
-        logic signed [7:0] local_a [4];
-        logic signed [7:0] local_b [4];
-        logic signed [15:0] local_expected;
-        (1, local_a = a, local_b = b, local_expected = get_expected(a, b)) ##2 (y == local_expected);
+        logic signed [OUT_WIDTH-1:0] local_exp;
+        @(posedge clk) disable iff (rst)
+        (1, local_exp = get_expected(a, b)) ##2 (y == local_exp);
     endproperty
 
-    assert_dot_product: assert property (@(posedge clk) disable iff (rst) p_check_result)
-        else $error("Mismatch! Y=%d, Expected=%d", y, $past(get_expected(a, b), 2)); 
-        // Note: $past is used here for the display message to match the 2-cycle latency
+    assert_dot_product: assert property (p_check_result)
+        else $error("Mismatch at time %0t! Y=%d, Expected=%d", $time, y, $past(get_expected(a, b), 2));
 
 endmodule
