@@ -1,0 +1,105 @@
+`timescale 1ns/1ps
+
+// Transaction class for constrained randomization
+class dot_product_transaction;
+    rand bit signed [7:0] a [4];
+    rand bit signed [7:0] b [4];
+
+    // Constraint to occasionally test boundary values
+    constraint boundary_values {
+        foreach (a[i]) {
+            a[i] dist {8'h7F := 1, 8'h80 := 1, [-127:126] := 10};
+        }
+        foreach (b[i]) {
+            b[i] dist {8'h7F := 1, 8'h80 := 1, [-127:126] := 10};
+        }
+    }
+endclass
+
+module dot_product_tb;
+
+    // Parameters
+    parameter int DATA_WIDTH = 8;
+    parameter int VECTOR_SIZE = 4;
+    parameter int OUT_WIDTH = 16;
+    parameter int CLK_PERIOD = 10;
+
+    // Signals
+    logic                      clk;
+    logic                      rst;
+    logic signed [DATA_WIDTH-1:0] a [VECTOR_SIZE-1:0];
+    logic signed [DATA_WIDTH-1:0] b [VECTOR_SIZE-1:0];
+    logic signed [OUT_WIDTH-1:0] y;
+
+    // Instantiate DUT
+    dot_product #(
+        .DATA_WIDTH(DATA_WIDTH),
+        .VECTOR_SIZE(VECTOR_SIZE),
+        .OUT_WIDTH(OUT_WIDTH)
+    ) dut (
+        .clk(clk),
+        .rst(rst),
+        .a(a),
+        .b(b),
+        .y(y)
+    );
+
+    // Clock generation
+    initial begin
+        clk = 0;
+        forever #(CLK_PERIOD/2) clk = ~clk;
+    end
+
+    // Reference model function
+    function signed [OUT_WIDTH-1:0] get_expected(
+        logic signed [DATA_WIDTH-1:0] va [4],
+        logic signed [DATA_WIDTH-1:0] vb [4]
+    );
+        longint sum = 0;
+        for (int i = 0; i < 4; i++) begin
+            sum += va[i] * vb[i];
+        end
+        return signed'(sum[15:0]);
+    endfunction
+
+    // Test sequence
+    initial begin
+        dot_product_transaction tr;
+        tr = new();
+
+        // Initialize
+        rst = 1;
+        @(posedge clk);
+        rst = 0;
+        @(posedge clk);
+
+        // Run 20 randomized test cases
+        repeat (20) begin
+            if (!tr.randomize()) $fatal("Randomization failed");
+            
+            // Driving inputs
+            foreach (a[i]) a[i] = tr.a[i];
+            foreach (b[i]) b[i] = tr.b[i];
+            
+            @(posedge clk);
+        end
+
+        // Wait for pipeline to drain
+        repeat (5) @(posedge clk);
+        
+        $display("Done: 20 Randomized Tests Completed.");
+        $finish;
+    end
+
+    // --- SystemVerilog Assertions (Extra Credit) ---
+    // Property: The output 'y' should match the expected value 2 cycles after inputs are sampled
+    property p_check_result;
+        logic signed [7:0] sa [4];
+        logic signed [7:0] sb [4];
+        (1, sa = a, sb = b) ##2 (y == get_expected(sa, sb));
+    endproperty
+
+    assert_dot_product: assert property (@(posedge clk) disable iff (rst) p_check_result)
+        else $error("Mismatch! Y=%d, Expected=%d", y, get_expected(a, b)); // Note: get_expected(a,b) here is just for display, the property uses local variables
+
+endmodule
